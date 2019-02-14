@@ -32,8 +32,13 @@
                 <a href="/urls/<%= key %>">
                     click here
                 </a>
+                <form style="display:inline;" method="POST" action="/urls/<%= key %>/delete">
+                    <input type="submit" value="delete" />
+                </form>
             </li>
+
             <%} %>
         </ul>
+
     </body>
 </html>
