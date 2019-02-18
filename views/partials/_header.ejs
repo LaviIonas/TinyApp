@@ -3,5 +3,13 @@
     <head>
     </head>
     <body style="font-size:20px; padding:50px;">
+        <h1>
+            Welcome! You are signed in as <%= username %>
+        </h1>
+        <form action="/login" method="POST">
+            <button class="btn btn-primary" type="submit">
+                Logout
+            </button>
+        </form>
     </body>
 </html>

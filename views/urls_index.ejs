@@ -13,14 +13,17 @@
         </meta>
     </head>
     <body style="font-size:20px; padding:50px;">
-        <header>
-            <% include ./partials/_header %>
-        </header>
+        <% include ./partials/_header %>
+        <h1>
+            -------------------------------------------------
+        </h1>
         <h1>
             TinyApp
         </h1>
         <h3 style="color:blue;">
-            <a href = "/urls/new"> Create New Tiny Url</a>
+            <a href="/urls/new">
+                Create New Tiny Url
+            </a>
         </h3>
         <h3>
             My URLS
@@ -28,17 +31,19 @@
         <ul>
             <% for(var key in urls) { %>
             <li>
+                <%= key %>
+                <h6 style="display:inline;">
+                    --->
+                </h6>
                 <%= urls[key] %>
                 <a href="/urls/<%= key %>">
-                    click here
+                    Edit
                 </a>
-                <form style="display:inline;" method="POST" action="/urls/<%= key %>/delete">
-                    <input type="submit" value="delete" />
+                <form action="/urls/<%= key %>/delete" method="POST" style="display:inline;">
+                    <input type="submit" value="delete"/>
                 </form>
             </li>
-
             <%} %>
         </ul>
-
     </body>
 </html>
