@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <style>
+        </style>
         <meta charset="utf-8">
             <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
                 <!-- Bootstrap CSS -->
@@ -31,17 +33,23 @@
         <ul>
             <% for(var key in urls) { %>
             <li>
-                <%= key %>
-                <h6 style="display:inline;">
+                <a href="/urls/<%= key %>">
+                    <%= key %>
+                </a>
+                <h6 style="display:inline-block;">
                     --->
                 </h6>
-                <%= urls[key] %>
+                <h6 style="display:inline-block;">
+                    <%= urls[key].longURL %>
+                </h6>
+                <% if(urls[key].userID === ID){ %>
                 <a href="/urls/<%= key %>">
                     Edit
                 </a>
-                <form action="/urls/<%= key %>/delete" method="POST" style="display:inline;">
+                <form action="/urls/<%= key %>/delete" method="POST" style="display:inline-block;">
                     <input type="submit" value="delete"/>
                 </form>
+                <%}%>
             </li>
             <%} %>
         </ul>

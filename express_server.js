@@ -1,50 +1,50 @@
-var express = require("express");
-var app = express();
-var PORT = 8080; // default port 8080
+const express = require("express");
+const app = express();
+const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session')
+const bcrypt = require('bcrypt');
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 var urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
-};
-// const data = {
-//   users: [
-//     { username: 'monica', password: 'testing'},
-//     { username: 'khurram', password: 'testing2' }
-//   ]
-// }
-const users = {
-    "userRandomID": {
-        id: "userRandomID",
-        username: "monica",
-        password: "t"
+    b2xVn2: {
+        longURL: "http://www.lighthouselabs.ca",
+        userID: "userRandomID"
     },
-    "user2RandomID": {
-        id: "user2RandomID",
-        username: "user2@example.com",
-        password: "dishwasher-funk"
+    s9m5xK: {
+        longURL: "http://www.google.com",
+        userID: "user2RandomID"
+    },
+    b3x4sc: {
+        longURL: "http://woopyland.com",
+        userID: "user3RandomID"
     }
-}
+};
+const users = {}
 
 function checkLogin(username, password) {
     for (var user in users) {
-        if (users[user].username === username && users[user].password === password) {
-            return user;
+        console.log(bcrypt.compareSync(users[user].password, password));
+        if (users[user].username === username) {
+            if (bcrypt.compareSync(password, users[user].password)) {
+                return user;
+            }
         }
     }
 }
+
 function getName(ID) {
-    for(var user in users){
-        if(user === ID){
+    for (var user in users) {
+        if (user === ID) {
             return users[user].username;
         }
     }
 }
+
 function checkIfExists(username) {
     for (var user in users) {
         if (users[user].username === username) {
@@ -58,8 +58,8 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    //const hashedPassword = bcrypt.hashSync(password, 10);
     const user = checkLogin(username, password);
-
     if (user) {
         // success
         res.cookie('username', user);
@@ -79,14 +79,15 @@ app.get("/signup", (req, res) => {
 app.post("/signup", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     checkIfExists(username, users);
     const ID = generateRandomString(6);
     users[ID] = {
         id: ID,
         username: username,
-        password: password
+        password: hashedPassword
     }
-    console.log(users);
+    //console.log(users);
     res.redirect('/');
 });
 app.post("/logout", (req, res) => {
@@ -99,6 +100,7 @@ app.get("/urls", (req, res) => {
     const name = getName(req.cookies.username);
     var templateVars = {
         username: name,
+        ID: req.cookies.username,
         urls: urlDatabase
     }
     res.render("urls_index", templateVars);
@@ -108,12 +110,12 @@ app.get("/urls/new", (req, res) => {
     var templateVars = {
         username: name,
     }
-    res.render("urls_new",templateVars);
+    res.render("urls_new", templateVars);
 });
 app.get("/urls/:shortURL", (req, res) => {
     let templateVars = {
         shortURL: req.params.shortURL,
-        longURL: urlDatabase[req.params.shortURL],
+        longURL: urlDatabase[req.params.shortURL].longURL,
     };
     res.render("urls_show", templateVars);
 });
