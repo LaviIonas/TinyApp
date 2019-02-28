@@ -1,15 +1,19 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 3000;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
+// Middleware decleration
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-app.use(cookieParser());
+app.use(cookieSession({
+    name: "session",
+    keys: ["sdasd edfgdg asd"]
+}));
 app.set("view engine", "ejs");
+// Test Data for TinyApp
 var urlDatabase = {
     b2xVn2: {
         longURL: "http://www.lighthouselabs.ca",
@@ -24,11 +28,16 @@ var urlDatabase = {
         userID: "user3RandomID"
     }
 };
-const users = {}
-
+const users = {
+    "admin": {
+        id: "admin",
+        username: "admin",
+        password: "admin"
+    }
+}
+//Function to check whether user input matches database
 function checkLogin(username, password) {
     for (var user in users) {
-        console.log(bcrypt.compareSync(users[user].password, password));
         if (users[user].username === username) {
             if (bcrypt.compareSync(password, users[user].password)) {
                 return user;
@@ -36,77 +45,98 @@ function checkLogin(username, password) {
         }
     }
 }
-
+//A get function for comparing ID to the database and returning username value
 function getName(ID) {
     for (var user in users) {
         if (user === ID) {
-            return users[user].username;
+            return users[ID].username;
         }
     }
 }
-
+//Function to check if username already exists in database
 function checkIfExists(username) {
     for (var user in users) {
         if (users[user].username === username) {
             throw "Error 400: User already exists";
+        } else {
+            console.log("all is fine username is not the same");
         }
     }
 }
+//Function for generating a random string of letters and numbers
+function generateRandomString(length) {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
+/*
+-------LogIn-----------
+*/
+app.get("/", (req, res) => {
+    res.redirect("/login");
+});
 app.get("/login", (req, res) => {
+    req.session.user_id = null;
     res.render("login");
 });
 app.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    //const hashedPassword = bcrypt.hashSync(password, 10);
     const user = checkLogin(username, password);
     if (user) {
         // success
-        res.cookie('username', user);
+        req.session.user_id = user;
         res.redirect('/urls');
     } else {
         // failed attempt
-        console.log("fail");
         res.render('login', {
             errorFeedback: 'Failed to find a user.'
         });
     }
     // console.log(`You attempted to log in with ${users.user.username}.`);
 });
+/*
+-------SignUp-----------
+*/
 app.get("/signup", (req, res) => {
     res.render("signup");
 });
 app.post("/signup", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    checkIfExists(username, users);
-    const ID = generateRandomString(6);
-    users[ID] = {
+    const hashedPassword = bcrypt.hashSync(password, 10); //encrypts password
+    checkIfExists(username, users); //should console.log ok if it passed
+    const ID = generateRandomString(6); //generates random string
+    users[ID] = { // Builds the new data entry for new user
         id: ID,
         username: username,
         password: hashedPassword
     }
-    //console.log(users);
     res.redirect('/');
 });
+/*
+-------LogOut-----------
+*/
 app.post("/logout", (req, res) => {
     res.redirect("/login")
 })
-app.get("/", (req, res) => {
-    res.redirect("/login");
-});
+/*
+-------HTML_ROUTING-----------
+*/
 app.get("/urls", (req, res) => {
-    const name = getName(req.cookies.username);
+    const name = getName(req.session.user_id);
     var templateVars = {
         username: name,
-        ID: req.cookies.username,
+        ID: req.session.user_id,
         urls: urlDatabase
     }
     res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
-    const name = getName(req.cookies.username);
+    const name = getName(req.session.user_id);
     var templateVars = {
         username: name,
     }
@@ -139,12 +169,3 @@ app.post("/urls/:shortURL/update", (req, res) => {
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}!`);
 });
-
-function generateRandomString(length) {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-}
