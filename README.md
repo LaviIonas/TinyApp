@@ -1,3 +1,3 @@
-## HEllO WELCOME TO MY TINYAPP
+## HELLO WELCOME TO MY TINYAPP
 
-## To run the file use `npm start`
+### To run the file use `npm start`
