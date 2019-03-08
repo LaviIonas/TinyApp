@@ -4,6 +4,7 @@ const PORT = 3000;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
+let loggedIn = false;
 // Middleware decleration
 app.use(bodyParser.urlencoded({
     extended: true
@@ -53,6 +54,15 @@ function getName(ID) {
         }
     }
 }
+
+function generateRandomString(length) {
+    let text = "";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
 //Function to check if username already exists in database
 function checkIfExists(username) {
     for (var user in users) {
@@ -63,7 +73,6 @@ function checkIfExists(username) {
         }
     }
 }
-
 /*
 -------LogIn-----------
 */
@@ -73,6 +82,7 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => {
     req.session.user_id = null;
     res.render("login");
+    loggedIn = false;
 });
 app.post("/login", (req, res) => {
     const username = req.body.username;
@@ -81,6 +91,7 @@ app.post("/login", (req, res) => {
     if (user) {
         // success
         req.session.user_id = user;
+        loggedIn = true;
         res.redirect('/urls');
     } else {
         // failed attempt
@@ -125,7 +136,12 @@ app.get("/urls", (req, res) => {
         ID: req.session.user_id,
         urls: urlDatabase
     }
-    res.render("urls_index", templateVars);
+    console.log(urlDatabase)
+    if(loggedIn){
+       res.render("urls_index", templateVars);
+    } else {
+        res.redirect("/login");
+    }
 });
 app.get("/urls/new", (req, res) => {
     const name = getName(req.session.user_id);
@@ -147,7 +163,7 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls/${shorturl}`);
 });
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL];
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
