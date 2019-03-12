@@ -23,4 +23,4 @@ Traverse into `localhost:3000` to begin your journey on saving 10 seconds on lin
 
 Thank you for using my app!! 
 
-![alt text](https://banner2.kisspng.com/20180405/vrw/kisspng-cute-kitten-american-shorthair-cuteness-puppy-kitten-5ac5bbcec32015.7385282715229081107992.jpg "Cute kitty")
+![alt text](https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413 "Cute kitty")
