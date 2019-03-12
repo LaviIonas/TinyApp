@@ -17,17 +17,17 @@
         <h3>
             Create TinyURL
         </h3>
-        <form action="/urls" class="form-inline" method="POST">
-            <div class="form-group mb-2">
-                <label for="longURL">
-                    Enter a URL:
-                </label>
-                <input class="form-control" name="longURL" placeholder="Include http://" style="width: 300px; margin: 1em" type="text">
-                    <button class="btn btn-primary" type="submit">
-                        <a href = "/urls">Submit</a>
-                    </button>
+        <div class="form-group mb-2">
+            <label>
+                Enter a URL:
+            </label>
+            <form class="form-inline" method="POST" action="/makeNewUrl">
+                <input class="form-control" type="text" name="longurl" placeholder="Include http://" style="width: 300px; margin: 1em">
                 </input>
-            </div>
-        </form>
+                <button class="btn btn-primary" type="submit">
+                    Submit
+                </button>
+            </form>
+        </div>
     </body>
 </html>
