@@ -6,12 +6,12 @@ It seems you have been snooping in my personal repositories again, but since you
 
 Then once you have that done, ``npm install`` to download all the dependencies
 This includes:
-⋅⋅*Express
-⋅⋅*EJS
-⋅⋅*Cookie-Parser
-⋅⋅*Cookie-Session
-⋅⋅*Body-Parser
-⋅⋅*Bcrypt
+-Express
+-EJS
+-Cookie-Parser
+-Cookie-Session
+-Body-Parser
+-Bcrypt
 
 To start up the webserver, type into the terminal `npm start` 
 
