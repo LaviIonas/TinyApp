@@ -1,3 +1,5 @@
-## HELLO WELCOME TO MY TINYAPP
+## Greeting all humans
 
-### To run the file use `npm start`
+It seems you have been snooping in my personal repositories, but since you are here, let me show you around.
+
+### To get started, you want to `clone` the project
