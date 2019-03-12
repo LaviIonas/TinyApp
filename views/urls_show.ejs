@@ -31,8 +31,10 @@
                 </button>
             </input>
         </form>
-        <form action="/urls/<%= shortURL %>/delete" method="POST" style="display:inline-block;">
-            <input type="submit" value="delete"/>
+        <form action="/urls/<%= shortURL %>/delete" method="POST">
+            <button class = "btn btn-primary" style="display:inline;" type="submit"/>
+            Delete
+            </button>
         </form>
     </body>
 </html>
