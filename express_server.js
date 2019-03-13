@@ -4,7 +4,6 @@ const PORT = 3000;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
-let loggedIn = false;
 const ID = generateRandomString(6); //generates random string
 // Middleware decleration
 app.use(bodyParser.urlencoded({
@@ -51,7 +50,6 @@ function getName(ID) {
         }
     }
 }
-
 function generateRandomString(length) {
     let text = '';
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -68,8 +66,6 @@ function checkIfExists(username) {
         }
     }
 }
-//Checks if user has access to certain links
-function checkCredentials(user, link) {}
 /*
 -------LogIn-----------
 */
@@ -77,13 +73,13 @@ app.get("/", (req, res) => {
     res.redirect("/login");
 });
 app.get("/login", (req, res) => {
-    req.session.user_id = null;
-    res.render("login");
-    console.log("You tried to log out");
-    loggedIn = false;
+    if(req.session.user_id != null) {
+        res.redirect("/urls");
+    } else {
+        res.render("login");
+    }
 });
 app.post("/login", (req, res) => {
-    console.log("but you somehow made it here");
     const username = req.body.username;
     const password = req.body.password;
     if (username === "" || password === ""){
@@ -93,13 +89,18 @@ app.post("/login", (req, res) => {
     if (user) {
         // success
         req.session.user_id = user;
-        loggedIn = true;
         res.redirect('/urls');
     } else {
-        throw ("Password or Username did NOT match!");
+        throw ("Password or Username is incorrect!");
     }
-    // console.log(`You attempted to log in with ${users.user.username}.`);
 });
+/*
+-------LogOut-----------
+*/
+app.post("/logout", (req, res) => {
+    req.session.user_id = null;
+    res.redirect("/")
+})
 /*
 -------SignUp-----------
 */
@@ -122,12 +123,6 @@ app.post("/signup", (req, res) => {
     res.redirect('/');
 });
 /*
--------LogOut-----------
-*/
-app.post("/logout", (req, res) => {
-    res.redirect("/")
-})
-/*
 -------HTML_ROUTING-----------
 */
 app.get("/urls", (req, res) => {
@@ -137,7 +132,7 @@ app.get("/urls", (req, res) => {
         ID: req.session.user_id,
         urls: urlDatabase
     };
-    if (loggedIn) {
+    if (req.session.user_id != null) {
         res.render("urls_index", templateVars);
     } else {
         res.redirect("/login");
@@ -146,8 +141,13 @@ app.get("/urls", (req, res) => {
 // Get to create new link page
 app.get("/urls/new", (req, res) => {
     const name = getName(req.session.user_id);
-    const    templateVars = {
+    const templateVars = {
         username: name,
+    }
+    if (req.session.user_id != null) {
+        res.render("urls_new", templateVars);
+    } else {
+        res.redirect("/login");
     }
     res.render("urls_new", templateVars);
 });
@@ -173,6 +173,11 @@ app.get("/urls/:shortURL", (req, res) => {
         shortURL: req.params.shortURL,
         longURL: urlDatabase[req.params.shortURL].longURL
     };
+    if (req.session.user_id != null) {
+        res.render("urls_show", templateVars);
+    } else {
+        res.redirect("/login");
+    }
     res.render("urls_show", templateVars);
 });
 app.post("/urls/:shortURL/update", (req, res) => {
