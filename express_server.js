@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 let loggedIn = false;
+const ID = generateRandomString(6); //generates random string
 // Middleware decleration
 app.use(bodyParser.urlencoded({
     extended: true
@@ -36,12 +37,11 @@ const users = {
 //Function to check whether user input matches database
 function checkLogin(username, password) {
     for (var user in users) {
-        if (users[user].username === username) {
-            if (bcrypt.compareSync(password, users[user].password)) {
-                return user;
-            }
+        if (users[user].username === username && (bcrypt.compareSync(password, users[user].password))) {
+            return user;
         }
     }
+    return false;
 }
 //A get function for comparing ID to the database and returning username value
 function getName(ID) {
@@ -65,11 +65,11 @@ function checkIfExists(username) {
     for (var user in users) {
         if (users[user].username === username) {
             throw "Error 400: User already exists";
-        } else {
-            console.log("all is fine username is not the same");
         }
     }
 }
+//Checks if user has access to certain links
+function checkCredentials(user, link) {}
 /*
 -------LogIn-----------
 */
@@ -79,11 +79,16 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => {
     req.session.user_id = null;
     res.render("login");
+    console.log("You tried to log out");
     loggedIn = false;
 });
 app.post("/login", (req, res) => {
+    console.log("but you somehow made it here");
     const username = req.body.username;
     const password = req.body.password;
+    if (username === "" || password === ""){
+        throw ("Username or Password is empty, please put something in");
+    }
     const user = checkLogin(username, password);
     if (user) {
         // success
@@ -91,10 +96,7 @@ app.post("/login", (req, res) => {
         loggedIn = true;
         res.redirect('/urls');
     } else {
-        // failed attempt
-        res.render('login', {
-            errorFeedback: 'Failed to find a user.'
-        });
+        throw ("Password or Username did NOT match!");
     }
     // console.log(`You attempted to log in with ${users.user.username}.`);
 });
@@ -107,10 +109,11 @@ app.get("/signup", (req, res) => {
 app.post("/signup", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    if (password === '') throw ("Password is empty, please make a password (you must protect the links!!!)");
+    if (username === "" || password === ""){
+        throw ("Username or Password is empty, please put something in");
+    }
     const hashedPassword = bcrypt.hashSync(password, 10); //encrypts password
     checkIfExists(username, users); //should console.log ok if it passed
-    const ID = generateRandomString(6); //generates random string
     users[ID] = { // Builds the new data entry for new user
         id: ID,
         username: username,
@@ -122,7 +125,7 @@ app.post("/signup", (req, res) => {
 -------LogOut-----------
 */
 app.post("/logout", (req, res) => {
-    res.redirect("/login")
+    res.redirect("/")
 })
 /*
 -------HTML_ROUTING-----------
@@ -134,8 +137,6 @@ app.get("/urls", (req, res) => {
         ID: req.session.user_id,
         urls: urlDatabase
     };
-    console.log("DB from index", urlDatabase);
-    console.log("|-----------------------------|");
     if (loggedIn) {
         res.render("urls_index", templateVars);
     } else {
@@ -145,15 +146,16 @@ app.get("/urls", (req, res) => {
 // Get to create new link page
 app.get("/urls/new", (req, res) => {
     const name = getName(req.session.user_id);
-    var templateVars = {
+    const    templateVars = {
         username: name,
     }
     res.render("urls_new", templateVars);
 });
 // POST to accept new information and slap it into the DB
 app.post("/makeNewUrl", (req, res) => {
-    var ranID = generateRandomString(6);
+    const ranID = generateRandomString(6);
     urlDatabase[ranID] = {
+        id: ID,
         longURL: req.body.longurl
     };
     res.redirect("/urls");
@@ -167,22 +169,33 @@ app.get("/u/:shortURL", (req, res) => {
 // -- forms from url-show ---
 // Get method upon clicking one of the short links which will take you to its individual page
 app.get("/urls/:shortURL", (req, res) => {
-    let templateVars = {
+    const templateVars = {
         shortURL: req.params.shortURL,
         longURL: urlDatabase[req.params.shortURL].longURL
     };
     res.render("urls_show", templateVars);
 });
 app.post("/urls/:shortURL/update", (req, res) => {
-    urlDatabase[req.params.shortURL].longURL = req.body.longurl;
+    if (req.session.user_id === urlDatabase[req.params.shortURL].id) {
+        if (req.body.longurl != "") {
+            urlDatabase[req.params.shortURL].longURL = req.body.longurl;
+        } else {
+            throw ("please enter something to update the link");
+        }
+    } else {
+        throw ("You do not have acess to edit this URL");
+    }
     res.redirect("/urls");
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
-    delete urlDatabase[req.params.shortURL];
+    if (req.session.user_id === urlDatabase[req.params.shortURL].id) {
+        delete urlDatabase[req.params.shortURL];
+    } else {
+        throw ("You do not have acess to edit this URL");
+    }
     res.redirect("/urls");
 });
 // -- port --
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}!`);
 });
-
